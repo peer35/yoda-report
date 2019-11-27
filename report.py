@@ -64,8 +64,8 @@ text = text + 'percentage: {}\n\n'.format(round(percentage, 2))
 for coll in sorted(rep):
     text = text + '{}\t{}\t{}\n'.format(coll, rep[coll]['count'], convert_bytes(rep[coll]['size']))
 print(text)
-if percentage>80:
-    subject='WARNING: storage on vu-yoda.irodspoc-sara.surf-hosted.nl over 80% full!!'
+if percentage > 80:
+    subject = 'WARNING: storage on {} over 80% full!!'.format(conn['host'])
 else:
-    subject = 'INFO: storage usage on vu-yoda.irodspoc-sara.surf-hosted.nl'
+    subject = 'INFO: storage usage on {}'.format(conn['host'])
 send_mail(subject, text)
