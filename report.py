@@ -53,19 +53,20 @@ def query(connection):
 
 
 conn = SURF
-rep, total_size = query(conn)
-percentage = (total_size / conn['available']) * 100
-free = conn['available'] - total_size
+rep, used = query(conn)
+percentage = (used / conn['size']) * 100
+available = conn['size'] - used
 
-text = 'total size: {}\n'.format(convert_bytes(total_size))
-text = text + 'available: {}\n'.format(convert_bytes(conn['available']))
-text = text + 'free: {}\n'.format(convert_bytes(free))
+text = 'used: {}\n'.format(convert_bytes(used))
+text = text + 'size: {}\n'.format(convert_bytes(conn['size']))
+text = text + 'available: {}\n'.format(convert_bytes(available))
 text = text + 'percentage: {}\n\n'.format(round(percentage, 2))
 for coll in sorted(rep):
     text = text + '{}\t{}\t{}\n'.format(coll, rep[coll]['count'], convert_bytes(rep[coll]['size']))
 print(text)
-if percentage > 80:
-    subject = 'WARNING: storage on {} over 80% full!!'.format(conn['host'])
+warning=75
+if percentage > warning:
+    subject = 'WARNING: storage on {} over {} full!!'.format(conn['host'], warning)
 else:
     subject = 'INFO: storage usage on {}'.format(conn['host'])
 send_mail(subject, text)
