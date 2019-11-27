@@ -40,19 +40,21 @@ def query(connection):
         total_size = 0
         for result in query:
             a = result[Collection.name].split('/')
-            top = '{}/{}/{}/{}'.format(a[0], a[1], a[2], a[3])
+            toplevel_collection = '{}/{}/{}/{}'.format(a[0], a[1], a[2], a[3])
             size = result[DataObject.size]
             total_size = total_size + size
-            if top not in rep:
-                rep[top] = {}
-                rep[top]['size'] = 0
-                rep[top]['count'] = 0
-            rep[top]['size'] = rep[top]['size'] + size
-            rep[top]['count'] = rep[top]['count'] + 1
+            if toplevel_collection not in rep:
+                rep[toplevel_collection] = {}
+                rep[toplevel_collection]['collection'] = toplevel_collection
+                rep[toplevel_collection]['size'] = 0
+                rep[toplevel_collection]['count'] = 0
+            rep[toplevel_collection]['size'] = rep[toplevel_collection]['size'] + size
+            rep[toplevel_collection]['count'] = rep[toplevel_collection]['count'] + 1
     return rep, total_size
 
 
 conn = SURF
+#conn = YODATEST
 rep, used = query(conn)
 percentage = (used / conn['size']) * 100
 available = conn['size'] - used
@@ -61,12 +63,14 @@ text = 'used: {}\n'.format(convert_bytes(used))
 text = text + 'size: {}\n'.format(convert_bytes(conn['size']))
 text = text + 'available: {}\n'.format(convert_bytes(available))
 text = text + 'percentage: {}\n\n'.format(round(percentage, 2))
-for coll in sorted(rep):
-    text = text + '{}\t{}\t{}\n'.format(coll, rep[coll]['count'], convert_bytes(rep[coll]['size']))
+for i in sorted(rep.values(), key=lambda k: k['size'], reverse=True):
+    print(i)
+    text = text + '{}\t{}\t{}\n'.format(i['collection'], i['count'], convert_bytes(i['size']))
+
 print(text)
 warning=75
 if percentage > warning:
-    subject = 'WARNING: storage on {} over {} full!!'.format(conn['host'], warning)
+    subject = 'WARNING: storage on {} over {}% full!!'.format(conn['host'], warning)
 else:
     subject = 'INFO: storage usage on {}'.format(conn['host'])
 send_mail(subject, text)
